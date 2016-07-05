@@ -7,12 +7,13 @@
 #include <string.h>
 
 void print_board();
-void put(char color, long row, long line);
-int  can_put(char color, long row, long line);
-int  com_put(char color);
 int  human_put(char color);
+int  com_put(char color);
+int  can_put(char color, long row, long line);
 int  sub_can_put(char color, long row, long line, int row_vec, int line_vec);
+void put(char color, long row, long line);
 void reverce(char color, long row, long line, int row_vec, int line_vec);
+char victory_color();
 
 /* オセロ板（初期状態） */
 char board[8][8] = {{'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n'},
@@ -65,6 +66,12 @@ main(int argc, char **argv)
 		}
 		count += human_put(human_color);
 		print_board();
+	}
+
+	if (human_color == victory_color()) {
+		printf("Victory!\n");
+	} else {
+		printf("Defeat...\n");
 	}
 }
 
@@ -281,5 +288,29 @@ reverce(char color, long row, long line, int row_vec, int line_vec)
 		board[row_ - 1][line_ - 1] = color;
 		row_ += row_vec;
 		line_ += line_vec;
+	}
+}
+
+/* 勝敗を判定する関数 */
+char
+victory_color()
+{
+	int i, j, wcount = 0, bcount = 0;
+	
+	for (i = 0; i < 8; i++) {
+		for (j = 0; j < 8; j++) {
+			if (board[i][j] == 'w') {
+				wcount++;
+			}
+			else {
+				bcount++;
+			}
+		}
+	}
+
+	if (wcount > bcount) {
+		return 'w';
+	} else {
+		return 'b';
 	}
 }
