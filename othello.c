@@ -47,13 +47,16 @@ main(int argc, char **argv)
 		return 0;
 	}
 
-	// 上手くループしない
 	while (count < 64) {
 		count += com_put(com_color);
 		print_board();
-		if (count < 64) break;
+		printf("count: %d\n", count);
+		if (count >= 64) {
+			break;
+		}
 		count += human_put(human_color);
 		print_board();
+		printf("count: %d\n", count);
 	}
 }
 
@@ -90,7 +93,7 @@ human_put(char color)
 	int  direct[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 	char tmp[8] = {'\0'};
 	char *row_, *line_;
-	long row, line;
+	long row = 0, line = 0;
 
 	printf("If you want to pass, please type \"pass\".\n");
 	
@@ -100,29 +103,33 @@ human_put(char color)
 			exit(-1);
 		}
 
-		// ここの比較が成功しない（segmentation fault）
-		if (strcmp(tmp, "pass") == 0) break;
+		// 本当は以下の文で比較したいけど上手く行かない（segmentation fault）
+		/* if (strcmp(tmp, "pass") == 0) break; */
+		if (tmp[0] == 'p' &&
+		    tmp[1] == 'a' &&
+		    tmp[2] == 's' &&
+		    tmp[3] == 's') return 0;
 
 		row_ = strtok(tmp, " ");
 		row = strtol(row_, NULL, 10);
 		line_ = strtok(NULL, " ");
-		line = line_[0] - 'A' + 1;
-		
-		if (row < 1 || 8 < row)
-			printf("Usage: row[0~8] line[A~H]\n");
-		else if (line < 1 || 8 < line)
-			printf("Usage: row[0~8] line[A~H]\n");
-		
-		else {
-			if (can_put(color, row, line, direct)) {
-				put(color, row, line, direct);
-				return 1;
-			} else {
-				printf("You can't put here.\n");
-			}
+		if (line_ != NULL) {
+			line = line_[0] - 'A' + 1;
+		}
+
+		if ((row < 1 || 8 < row) ||
+		    (line < 1 || 8 < line)) {
+			printf("You can't put there.\n");			
+		}
+		else if (can_put(color, row, line, direct) == 0) {
+			printf("You can't put there.\n");
+		} else {
+			break;
 		}
 	}
-	return 0;
+	
+	put(color, row, line, direct);
+	return 1;
 }
 
 /* コンピュータが駒を置く関数 */
