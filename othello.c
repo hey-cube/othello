@@ -12,6 +12,7 @@ int  can_put(char color, long row, long line);
 int  com_put(char color);
 int  human_put(char color);
 int  sub_can_put(char color, long row, long line, int row_vec, int line_vec);
+void reverce(char color, long row, long line, int row_vec, int line_vec);
 
 /* オセロ板（初期状態） */
 char board[8][8] = {{'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n'},
@@ -37,17 +38,20 @@ main(int argc, char **argv)
 		return 0;
 	}
 
-	print_board();
 	human_color = argv[1][0];
 	
 	if (human_color == 'w') {
 		printf("Your piece is [＊].\n");
 		com_color = 'b';
+		print_board();
+		printf("If you want to pass, please type \"pass\".\n");
 		count += human_put(human_color);
 		print_board();
 	} else if (human_color == 'b') {
 		printf("Your piece is [＠].\n");		
 		com_color = 'w';
+		print_board();
+		printf("If you want to pass, please type \"pass\".\n");		
 	} else {
 		printf("Usage: %s your_color[w/b]\n", argv[0]);
 		return 0;
@@ -97,8 +101,6 @@ human_put(char color)
 	char *row_, *line_;
 	long row = 0, line = 0;
 
-	printf("If you want to pass, please type \"pass\".\n");
-	
 	while (1) {
 		if (fgets(tmp, 8, stdin) == NULL) {
 			printf("error human_put()\n");
@@ -201,6 +203,10 @@ sub_can_put(char color, long row, long line, int row_vec, int line_vec)
 {
 	long row_ = row + row_vec, line_ = line + line_vec;
 
+	if ((row_ < 1 || 8 < row_) ||
+	    (line_ < 1 || 8 < line_)) {
+		return 0;
+	}
 	if (board[row_ - 1][line_ - 1] == color) {
 		return 0;
 	}
@@ -212,8 +218,8 @@ sub_can_put(char color, long row, long line, int row_vec, int line_vec)
 		row_ += row_vec;
 		line_ += line_vec;
 
-		if ((row < 1 || 8 < row) ||
-		    (line < 1 || 8 < line)) {
+		if ((row_ < 1 || 8 < row_) ||
+		    (line_ < 1 || 8 < line_)) {
 			return 0;
 		}
 		if (board[row_ - 1][line_ - 1] == 'n') {
@@ -227,9 +233,53 @@ sub_can_put(char color, long row, long line, int row_vec, int line_vec)
 	return 1;
 }
 
+/* 指定された位置に駒を置く関数 */
 void
 put(char color, long row, long line)
 {
-	// 取りあえず指定箇所に指定された色を置く
+	int i;
+	
 	board[row - 1][line - 1] = color;
+
+	if (direct[0]) {
+		reverce(color, row, line, 0, 1);
+	}
+	if (direct[1]) {
+		reverce(color, row, line, 1, 1);
+	}
+	if (direct[2]) {
+		reverce(color, row, line, 1, 0);
+	}
+	if (direct[3]) {
+		reverce(color, row, line, 1, -1);
+	}
+	if (direct[4]) {
+		reverce(color, row, line, 0, -1);
+	}
+	if (direct[5]) {
+		reverce(color, row, line, -1, -1);
+	}
+	if (direct[6]) {
+		reverce(color, row, line, -1, 0);
+	}
+	if (direct[7]) {
+		reverce(color, row, line, -1, 1);
+	}
+
+	for (i = 0; i < 8; i++) {
+		direct[i] = 0;
+	}
+}
+
+/* vec で指定された方向にある駒をひっくり返す関数 */
+void
+reverce(char color, long row, long line, int row_vec, int line_vec)
+{
+	long row_ = row + row_vec, line_ = line + line_vec;
+
+	while(board[row_ - 1][line_ - 1] != color) {
+		board[row_ - 1][line_ - 1] = color;
+		row_ += row_vec;
+		line_ += line_vec;
+	}
 }
