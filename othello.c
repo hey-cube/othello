@@ -7,10 +7,11 @@
 #include <string.h>
 
 void print_board();
-void put(char color, int row, int line, int direct[]);
-int  can_put(char color, int row, int line, int direct[]);
-int   com_put(char color);
-int   human_put(char color);
+void put(char color, long row, long line);
+int  can_put(char color, long row, long line);
+int  com_put(char color);
+int  human_put(char color);
+int  sub_can_put(char color, long row, long line, int row_vec, int line_vec);
 
 /* オセロ板（初期状態） */
 char board[8][8] = {{'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n'},
@@ -21,6 +22,9 @@ char board[8][8] = {{'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n'},
 		    {'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n'},
 		    {'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n'},
 		    {'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n'},};
+
+// 駒を置ける方向を格納する配列
+int  direct[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 int
 main(int argc, char **argv)
@@ -37,10 +41,12 @@ main(int argc, char **argv)
 	human_color = argv[1][0];
 	
 	if (human_color == 'w') {
+		printf("Your piece is [＊].\n");
 		com_color = 'b';
 		count += human_put(human_color);
 		print_board();
 	} else if (human_color == 'b') {
+		printf("Your piece is [＠].\n");		
 		com_color = 'w';
 	} else {
 		printf("Usage: %s your_color[w/b]\n", argv[0]);
@@ -50,13 +56,11 @@ main(int argc, char **argv)
 	while (count < 64) {
 		count += com_put(com_color);
 		print_board();
-		printf("count: %d\n", count);
 		if (count >= 64) {
 			break;
 		}
 		count += human_put(human_color);
 		print_board();
-		printf("count: %d\n", count);
 	}
 }
 
@@ -89,8 +93,6 @@ print_board()
 int
 human_put(char color)
 {
-	// 駒を置ける方向を格納する配列
-	int  direct[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 	char tmp[8] = {'\0'};
 	char *row_, *line_;
 	long row = 0, line = 0;
@@ -117,18 +119,12 @@ human_put(char color)
 			line = line_[0] - 'A' + 1;
 		}
 
-		if ((row < 1 || 8 < row) ||
-		    (line < 1 || 8 < line)) {
-			printf("You can't put there.\n");			
-		}
-		else if (can_put(color, row, line, direct) == 0) {
-			printf("You can't put there.\n");
-		} else {
+		if (can_put(color, row, line)) {
 			break;
 		}
 	}
 	
-	put(color, row, line, direct);
+	put(color, row, line);
 	return 1;
 }
 
@@ -142,14 +138,97 @@ com_put(char color)
 
 /* 指定された位置が置ける場所かどうか判定する関数 */
 int
-can_put(char color, int row, int line, int direct[])
+can_put(char color, long row, long line)
 {
-	// 取りあえず常に1
+	int flag = 0;
+	
+	if ((row < 1 || 8 < row) ||
+	    (line < 1 || 8 < line)) {
+		printf("You can't put there.\n");
+		return 0;
+	}
+	if (board[row - 1][line - 1] != 'n') {
+		printf("You can't put there.\n");
+		return 0;
+		
+	}
+
+	if (sub_can_put(color, row, line, 0, 1)) {
+		direct[0] = 1;
+		flag = 1;
+	}
+	if (sub_can_put(color, row, line, 1, 1)) {
+		direct[1] = 1;
+		flag = 1;
+	}
+	if (sub_can_put(color, row, line, 1, 0)) {
+		direct[2] = 1;
+		flag = 1;
+	}
+	if (sub_can_put(color, row, line, 1, -1)) {
+		direct[3] = 1;
+		flag = 1;
+	}
+	if (sub_can_put(color, row, line, 0, -1)) {
+		direct[4] = 1;
+		flag = 1;
+	}
+	if (sub_can_put(color, row, line, -1, -1)) {
+		direct[5] = 1;
+		flag = 1;
+	}
+	if (sub_can_put(color, row, line, -1, 0)) {
+		direct[6] = 1;
+		flag = 1;
+	}
+	if (sub_can_put(color, row, line, -1, 1)) {
+		direct[7] = 1;
+		flag = 1;
+	}
+
+	if (flag) {
+		return 1;
+	}
+	
+	printf("You can't put there.\n");
+	return 0;
+}
+
+/* can_put() のサブ関数 */
+/* vec で指定された方向にひっくり返せる駒があるかどうかを判定する */
+int
+sub_can_put(char color, long row, long line, int row_vec, int line_vec)
+{
+	long row_ = row + row_vec, line_ = line + line_vec;
+
+	if (board[row_ - 1][line_ - 1] == color) {
+		return 0;
+	}
+	if (board[row_ - 1][line_ - 1] == 'n') {
+		return 0;
+	}
+
+	while (1) {
+		row_ += row_vec;
+		line_ += line_vec;
+
+		if ((row < 1 || 8 < row) ||
+		    (line < 1 || 8 < line)) {
+			return 0;
+		}
+		if (board[row_ - 1][line_ - 1] == 'n') {
+			return 0;
+		}
+		if (board[row_ - 1][line_ - 1] == color) {
+			break;
+		}
+	}
+
 	return 1;
 }
 
 void
-put(char color, int row, int line, int direct[])
+put(char color, long row, long line)
 {
 	// 取りあえず指定箇所に指定された色を置く
 	board[row - 1][line - 1] = color;
