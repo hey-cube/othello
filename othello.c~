@@ -2,6 +2,8 @@
 /* ~s1411396/othello/othello.c */
 /* Created: 2016/07/04 ver 1.0 */
 
+// please all region indent.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +15,6 @@ int  can_put(char color, long row, long line);
 int  sub_can_put(char color, long row, long line, int row_vec, int line_vec);
 void put(char color, long row, long line);
 void reverce(char color, long row, long line, int row_vec, int line_vec);
-// char victory_color();
 int victory(char com_color);
 int minimax(char com_color, int depth);
 
@@ -70,8 +71,10 @@ main(int argc, char **argv)
 		print_board();
 	}
 
-	if (victory(human_color)) {
+	if (victory(human_color) > 0) {
 		printf("Victory!\n");
+	} else if (victory(human_color) == 0) {
+	  printf("Draw");
 	} else {
 		printf("Defeat...\n");
 	}
@@ -293,58 +296,30 @@ reverce(char color, long row, long line, int row_vec, int line_vec)
 	}
 }
 
-/* 勝敗を判定する関数 */
-/*
-char
-victory_color()
-{
-	int i, j, wcount = 0, bcount = 0;
-	
-	for (i = 0; i < 8; i++) {
-		for (j = 0; j < 8; j++) {
-			if (board[i][j] == 'w') {
-				wcount++;
-			}
-			else {
-				bcount++;
-			}
-		}
-	}
-
-	if (wcount > bcount) {
-		return 'w';
-	} else {
-		return 'b';
-	}
-}
-*/
-
+/* please comment here. */
 int
-victory(char com_color) {
-  int com = 0, human = 0;
+victory(char color) {
+  int player1 = 0, player2 = 0;
   int i, j;
 
   for (i = 0; i < 8; i++) {
     for (j = 0; j < 8; j++) {
-      if (board[i][j] == com_color) {
-	com++;
+      if (board[i][j] == color) {
+	player1++;
       } else if (board[i][j] != 'n') {
-	human++;
+	player2++;
       }
     }
   }
 
-  if (com > human) {
-    return com - human;
-  } else {
-    return 0;
-  }
+  return player1 - player2;
 }
 
+/* please comment here. */
 int
-minimax(char com_color, int depth) {
+minimax(char color, int depth) {
   if (depth == 0) {
-    return victory(com_color);
+    return victory(color);
   }
   // write here
   return 0;
