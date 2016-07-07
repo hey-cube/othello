@@ -2,8 +2,6 @@
 /* ~s1411396/othello/othello.c */
 /* Created: 2016/07/04 ver 1.0 */
 
-// please all region indent.
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,12 +9,11 @@
 void print_board();
 int  human_put(char color);
 int  com_put(char color);
-int  can_put(char color, long row, long line, char pos[][]);
+int  can_put(char color, long row, long line);
 int  sub_can_put(char color, long row, long line, int row_vec, int line_vec);
 void put(char color, long row, long line);
 void reverce(char color, long row, long line, int row_vec, int line_vec);
-int  victory(char com_color, char pos[][]);
-int  minimax(char com_color, int depth, char pos[][]);
+char victory_color();
 
 /* オセロ板（初期状態） */
 char board[8][8] = {{'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n'},
@@ -71,10 +68,8 @@ main(int argc, char **argv)
 		print_board();
 	}
 
-	if (victory(human_color, board) > 0) {
+	if (human_color == victory_color()) {
 		printf("Victory!\n");
-	} else if (victory(human_color, board) == 0) {
-	  printf("Draw");
 	} else {
 		printf("Defeat...\n");
 	}
@@ -152,7 +147,7 @@ com_put(char color)
 
 /* 指定された位置が置ける場所かどうか判定する関数 */
 int
-can_put(char color, long row, long line, char pos[][])
+can_put(char color, long row, long line)
 {
 	int flag = 0;
 	
@@ -161,7 +156,7 @@ can_put(char color, long row, long line, char pos[][])
 		printf("You can't put there.\n");
 		return 0;
 	}
-	if (pos[row - 1][line - 1] != 'n') {
+	if (board[row - 1][line - 1] != 'n') {
 		printf("You can't put there.\n");
 		return 0;
 		
@@ -219,10 +214,10 @@ sub_can_put(char color, long row, long line, int row_vec, int line_vec)
 	    (line_ < 1 || 8 < line_)) {
 		return 0;
 	}
-	if (pos[row_ - 1][line_ - 1] == color) {
+	if (board[row_ - 1][line_ - 1] == color) {
 		return 0;
 	}
-	if (pos[row_ - 1][line_ - 1] == 'n') {
+	if (board[row_ - 1][line_ - 1] == 'n') {
 		return 0;
 	}
 
@@ -234,10 +229,10 @@ sub_can_put(char color, long row, long line, int row_vec, int line_vec)
 		    (line_ < 1 || 8 < line_)) {
 			return 0;
 		}
-		if (pos[row_ - 1][line_ - 1] == 'n') {
+		if (board[row_ - 1][line_ - 1] == 'n') {
 			return 0;
 		}
-		if (pos[row_ - 1][line_ - 1] == color) {
+		if (board[row_ - 1][line_ - 1] == color) {
 			break;
 		}
 	}
@@ -247,11 +242,11 @@ sub_can_put(char color, long row, long line, int row_vec, int line_vec)
 
 /* 指定された位置に駒を置く関数 */
 void
-put(char color, long row, long line, char pos[][])
+put(char color, long row, long line)
 {
 	int i;
 	
-	pos[row - 1][line - 1] = color;
+	board[row - 1][line - 1] = color;
 
 	if (direct[0]) {
 		reverce(color, row, line, 0, 1);
@@ -296,55 +291,26 @@ reverce(char color, long row, long line, int row_vec, int line_vec)
 	}
 }
 
-/* please comment here. */
-int
-victory(char color, char pos[][]) {
-  int player1 = 0, player2 = 0;
-  int i, j;
+/* 勝敗を判定する関数 */
+char
+victory_color()
+{
+	int i, j, wcount = 0, bcount = 0;
+	
+	for (i = 0; i < 8; i++) {
+		for (j = 0; j < 8; j++) {
+			if (board[i][j] == 'w') {
+				wcount++;
+			}
+			else {
+				bcount++;
+			}
+		}
+	}
 
-  for (i = 0; i < 8; i++) {
-    for (j = 0; j < 8; j++) {
-      if (pos[i][j] == color) {
-	player1++;
-      } else if (pos[i][j] != 'n') {
-	player2++;
-      }
-    }
-  }
-
-  return player1 - player2;
-}
-
-/* please comment here. */
-int
-minimax(char color, int depth, char pos[][]) {
-  int  i, j;
-  // please comment here.
-  int  point[8][8] = {{0, 0, 0, 0, 0, 0, 0, 0},
-		      {0, 0, 0, 0, 0, 0, 0, 0},
-		      {0, 0, 0, 0, 0, 0, 0, 0},
-		      {0, 0, 0, 0, 0, 0, 0, 0},
-		      {0, 0, 0, 0, 0, 0, 0, 0},
-		      {0, 0, 0, 0, 0, 0, 0, 0},
-		      {0, 0, 0, 0, 0, 0, 0, 0},
-		      {0, 0, 0, 0, 0, 0, 0, 0},}
-  char next_pos[8][8];
-
-  for (i = 0; i < 8; i++) {
-    for (j = 0; j < 8; j++) {
-      next_pos[i][j] = pos[i][j];
-    }
-  }
-
-  if (depth == 0) {
-    return victory(color);
-  }
-
-  for (i = 0; i < 8; i++) {
-    for (j = 0; j < 8; j++) {
-      if (can_put(color, i, j)) {
-	point[i][j] = minimax(color, depth--, );
-      }
-    }
-  }
+	if (wcount > bcount) {
+		return 'w';
+	} else {
+		return 'b';
+	}
 }
