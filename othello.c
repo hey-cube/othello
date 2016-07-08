@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "othelloAI.c"
 
 void print_board();
 int  human_put(char color);
@@ -114,8 +115,6 @@ human_put(char color)
 			exit(-1);
 		}
 
-		// 本当は以下の文で比較したいけど上手く行かない（segmentation fault）
-		/* if (strcmp(tmp, "pass") == 0) break; */
 		if (tmp[0] == 'p' &&
 		    tmp[1] == 'a' &&
 		    tmp[2] == 's' &&
@@ -141,8 +140,13 @@ human_put(char color)
 int
 com_put(char color)
 {
-	// 取りあえず人間 vs 人間を実装
-	return human_put(color);
+  int row, line;
+  if (minimax(board, color, 3, 0, &row, &line) == -65) {
+    return 0;
+  }
+
+  put(color, row, line);
+  return 1;
 }
 
 /* 指定された位置が置ける場所かどうか判定する関数 */
