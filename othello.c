@@ -140,13 +140,15 @@ human_put(char color)
 int
 com_put(char color)
 {
-  int row, line;
-  if (minimax(board, color, 3, 0, &row, &line) == -65) {
-    return 0;
-  }
+	int row, line;
+	
+	if (minimax(board, color, 3, &row, &line) == -65) {
+		return 0;
+	}
 
-  put(color, row, line);
-  return 1;
+	can_put(color, row, line);
+	put(color, row, line);
+	return 1;
 }
 
 /* 指定された位置が置ける場所かどうか判定する関数 */

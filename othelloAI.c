@@ -1,20 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int  minimax(char **board, char color, int depth, int flag, int *r, int *l);
-int  can_put_(char color, long row, long line, char **board);
-int  sub_can_put_(char color, long row, long line, int row_vec, int line_vec, char **board);
-void put_(char color, long row, long line, char **board, char **next);
-void reverce_(char color, long row, long line, int row_vec, int line_vec, char **board);
-int  eval(char color, char **board, int flag);
+int  minimax(char board[8][8], char color, int depth, int *r, int *l);
+int  can_put_(char color, long row, long line, char board[8][8]);
+int  sub_can_put_(char color, long row, long line, int row_vec, int line_vec, char board[8][8]);
+void put_(char color, long row, long line, char board[8][8], char next[8][8]);
+void reverce_(char color, long row, long line, int row_vec, int line_vec, char board[8][8]);
+int  eval(char color, char board[8][8]);
 char reverce_color(char color);
 
 int direct_[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 /* minimax法を実現する関数 */
-/* flag = 1 のとき color は敵の色を示す */
 int
-minimax(char **board, char color, int depth, int flag, int *r, int *l)
+minimax(char board[8][8], char color, int depth, int *r, int *l)
 {
 	int  i, j, tmp;
 	// 評価値の最大値を格納する変数
@@ -22,13 +21,12 @@ minimax(char **board, char color, int depth, int flag, int *r, int *l)
 	// 評価が最大になる場所を記憶する変数
 	int row = -1, line = -1;
 
-	// char ** じゃなくて char *[8] だと gcc に認識されるのは何故？
 	char pos[8][8];
 	char rev_color;
 
 	// 指定された深さまで探索したら評価値を返す
 	if (depth == 0) {
-		return eval(color, board, flag);
+		return eval(color, board);
 	}
 
 	// board 全体を調べる
@@ -37,10 +35,10 @@ minimax(char **board, char color, int depth, int flag, int *r, int *l)
 			// 現在位置に駒が置ける場合
 			if (can_put_(color, i, j, board)) {
 				// 駒を置いた状態を作る
-			  put_(color, i, j, board, pos);
+				put_(color, i, j, board, pos);
 				rev_color = reverce_color(color);
 				// その状態で minimax() を再帰（color は反転）
-				tmp = minimax(pos, rev_color, depth--, (flag + 1) % 2, r, l);
+				tmp = minimax(pos, rev_color, depth - 1, r, l);
 				// 現在位置に置いたときの評価が良い場合
 				if (tmp > point) {
 					// point, row, line を更新
@@ -54,12 +52,21 @@ minimax(char **board, char color, int depth, int flag, int *r, int *l)
 
 	*r = row;
 	*l = line;
+
+	// 読んだ先で置ける場所がなくなる場合
+	if (row != -1 &&
+	    line != -1 &&
+	    point == -65) {
+		return 0;
+	}
+
+	// 現時点で置ける場所がない場合（このとき、point = -65）
 	return point;
 }
 
 /* 指定された位置が置ける場所かどうか判定する関数 */
 int
-can_put_(char color, long row, long line, char **board)
+can_put_(char color, long row, long line, char board[8][8])
 {
 	int flag = 0;
 	
@@ -115,7 +122,7 @@ can_put_(char color, long row, long line, char **board)
 /* can_put_() のサブ関数 */
 /* vec で指定された方向にひっくり返せる駒があるかどうかを判定する */
 int
-sub_can_put_(char color, long row, long line, int row_vec, int line_vec, char **board)
+sub_can_put_(char color, long row, long line, int row_vec, int line_vec, char board[8][8])
 {
 	long row_ = row + row_vec, line_ = line + line_vec;
 
@@ -151,41 +158,41 @@ sub_can_put_(char color, long row, long line, int row_vec, int line_vec, char **
 
 /* 指定された位置に駒を置く関数 */
 void
-put_(char color, long row, long line, char **board, char **next)
+put_(char color, long row, long line, char board[8][8], char next[8][8])
 {
-  int i, j;
+	int i, j;
 
-  for (i = 0; i < 8; i++) {
-    for (j = 0; j < 8; j++) {
-      next[i][j] = board[i][j];
-    }
-  }
+	for (i = 0; i < 8; i++) {
+		for (j = 0; j < 8; j++) {
+			next[i][j] = board[i][j];
+		}
+	}
 	
 	next[row - 1][line - 1] = color;
 
 	if (direct_[0]) {
-	  reverce_(color, row, line, 0, 1, next);
+		reverce_(color, row, line, 0, 1, next);
 	}
 	if (direct_[1]) {
-	  reverce_(color, row, line, 1, 1, next);
+		reverce_(color, row, line, 1, 1, next);
 	}
 	if (direct_[2]) {
-	  reverce_(color, row, line, 1, 0, next);
+		reverce_(color, row, line, 1, 0, next);
 	}
 	if (direct_[3]) {
-	  reverce_(color, row, line, 1, -1, next);
+		reverce_(color, row, line, 1, -1, next);
 	}
 	if (direct_[4]) {
-	  reverce_(color, row, line, 0, -1, next);
+		reverce_(color, row, line, 0, -1, next);
 	}
 	if (direct_[5]) {
-	  reverce_(color, row, line, -1, -1, next);
+		reverce_(color, row, line, -1, -1, next);
 	}
 	if (direct_[6]) {
-	  reverce_(color, row, line, -1, 0, next);
+		reverce_(color, row, line, -1, 0, next);
 	}
 	if (direct_[7]) {
-	  reverce_(color, row, line, -1, 1, next);
+		reverce_(color, row, line, -1, 1, next);
 	}
 
 	for (i = 0; i < 8; i++) {
@@ -195,7 +202,7 @@ put_(char color, long row, long line, char **board, char **next)
 
 /* vec で指定された方向にある駒をひっくり返す関数 */
 void
-reverce_(char color, long row, long line, int row_vec, int line_vec, char **board)
+reverce_(char color, long row, long line, int row_vec, int line_vec, char board[8][8])
 {
 	long row_ = row + row_vec, line_ = line + line_vec;
 
@@ -207,23 +214,15 @@ reverce_(char color, long row, long line, int row_vec, int line_vec, char **boar
 }
 
 /* 盤面を評価する関数 */
-/* flag = 1 のとき color は敵の色を示す */
 int
-eval(char color, char **board, int flag)
+eval(char color, char board[8][8])
 {
 	int i, j;
 	int p1 = 0, p2 = 0;
-	char p1color;
-
-	if (flag == 0) {
-	  p1color = color;
-	} else {
-	  p1color = reverce_color(color);
-	}
 	
 	for (i = 0; i < 8; i++) {
 		for (j = 0; j < 8; j++) {
-			if (board[i][j] == p1color) {
+			if (board[i][j] == color) {
 				p1++;
 			}
 			else if (board[i][j] != 'n') {
@@ -231,7 +230,7 @@ eval(char color, char **board, int flag)
 			}
 		}
 	}
-
+	
 	return p1 - p2;
 }
 
@@ -239,11 +238,11 @@ eval(char color, char **board, int flag)
 char
 reverce_color(char color)
 {
-  if (color == 'w') {
-    return 'b';
-  } else if (color == 'b') {
-    return 'w';
-  }
+	if (color == 'w') {
+		return 'b';
+	} else if (color == 'b') {
+		return 'w';
+	}
 
-  return 'n';
+	return 'n';
 }
