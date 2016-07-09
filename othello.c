@@ -140,15 +140,22 @@ human_put(char color)
 int
 com_put(char color)
 {
-	int row, line;
+	int row, line, tmp;
 	
-	if (minimax(board, color, 3, &row, &line) == -65) {
-		return 0;
-	}
+	tmp = minimax(board, color, 3, 0, &row, &line);
 
-	can_put(color, row, line);
-	put(color, row, line);
-	return 1;
+	// for debug
+	/* printf("tmp: %d, row: %d, line: %d\n", tmp, row, line); */
+
+	if (tmp == -65 &&
+	    row == -1 &&
+	    line == -1) {
+		return 0;
+	} else {
+		can_put(color, row, line);
+		put(color, row, line);
+		return 1;
+	}
 }
 
 /* 指定された位置が置ける場所かどうか判定する関数 */

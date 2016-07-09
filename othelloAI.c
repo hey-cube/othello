@@ -1,32 +1,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int  minimax(char board[8][8], char color, int depth, int *r, int *l);
+int  minimax(char board[8][8], char color, int depth, int flag, int *r, int *l);
 int  can_put_(char color, long row, long line, char board[8][8]);
 int  sub_can_put_(char color, long row, long line, int row_vec, int line_vec, char board[8][8]);
 void put_(char color, long row, long line, char board[8][8], char next[8][8]);
 void reverce_(char color, long row, long line, int row_vec, int line_vec, char board[8][8]);
-int  eval(char color, char board[8][8]);
+int  eval(char color, char board[8][8], int flag);
 char reverce_color(char color);
 
 int direct_[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 /* minimax法を実現する関数 */
+/* flag = 1 の時は敵のターン */
 int
-minimax(char board[8][8], char color, int depth, int *r, int *l)
+minimax(char board[8][8], char color, int depth, int flag, int *r, int *l)
 {
 	int  i, j, tmp;
 	// 評価値の最大値を格納する変数
-	int  point = -65;
+	int  point;
 	// 評価が最大になる場所を記憶する変数
 	int row = -1, line = -1;
-
 	char pos[8][8];
 	char rev_color;
 
+	if (flag) {
+		point = 65;
+	} else {
+		point = -65;
+	}
+
+	// for debug
+	/* printf("depth: %d\n", depth); */
+
 	// 指定された深さまで探索したら評価値を返す
 	if (depth == 0) {
-		return eval(color, board);
+		return eval(color, board, flag);
 	}
 
 	// board 全体を調べる
@@ -34,13 +43,37 @@ minimax(char board[8][8], char color, int depth, int *r, int *l)
 		for (j = 0; j < 8; j++) {
 			// 現在位置に駒が置ける場合
 			if (can_put_(color, i, j, board)) {
+
+				// for debug
+				/* printf("can_put at (%d, %d)\n", i, j); */
+				
 				// 駒を置いた状態を作る
 				put_(color, i, j, board, pos);
 				rev_color = reverce_color(color);
 				// その状態で minimax() を再帰（color は反転）
-				tmp = minimax(pos, rev_color, depth - 1, r, l);
-				// 現在位置に置いたときの評価が良い場合
-				if (tmp > point) {
+				tmp = minimax(pos, rev_color, depth - 1,
+					      (flag + 1) % 2, r, l);
+
+				// 自分のターンでの評価
+				if (flag == 0 && tmp > point) {
+
+					// for debug
+					/* printf("flag: %d, tmp: %d, point: %d\n", */
+					/*        flag, tmp, point); */
+					
+					// point, row, line を更新
+					point = tmp;
+					row = i;
+					line = j;
+				}
+
+				// 相手のターンでの評価
+				if (flag == 1 && tmp < point) {
+
+					// for debug
+					/* printf("flag: %d, tmp: %d, point: %d\n", */
+					/*        flag, tmp, point); */
+
 					// point, row, line を更新
 					point = tmp;
 					row = i;
@@ -52,15 +85,6 @@ minimax(char board[8][8], char color, int depth, int *r, int *l)
 
 	*r = row;
 	*l = line;
-
-	// 読んだ先で置ける場所がなくなる場合
-	if (row != -1 &&
-	    line != -1 &&
-	    point == -65) {
-		return 0;
-	}
-
-	// 現時点で置ける場所がない場合（このとき、point = -65）
 	return point;
 }
 
@@ -214,15 +238,24 @@ reverce_(char color, long row, long line, int row_vec, int line_vec, char board[
 }
 
 /* 盤面を評価する関数 */
+/* flag = 1 の時は敵のターン */
 int
-eval(char color, char board[8][8])
+eval(char color, char board[8][8], int flag)
 {
 	int i, j;
 	int p1 = 0, p2 = 0;
+	char p1color;
+
+	if (flag) {
+		p1color = reverce_color(color);
+	}
+	else {
+		p1color = color;
+	}
 	
 	for (i = 0; i < 8; i++) {
 		for (j = 0; j < 8; j++) {
-			if (board[i][j] == color) {
+			if (board[i][j] == p1color) {
 				p1++;
 			}
 			else if (board[i][j] != 'n') {
