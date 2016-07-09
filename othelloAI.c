@@ -31,7 +31,7 @@ minimax(char board[8][8], char color, int depth, int flag, int *r, int *l)
 	}
 
 	// for debug
-	/* printf("depth: %d\n", depth); */
+	printf("depth: %d\n", depth);
 
 	// 指定された深さまで探索したら評価値を返す
 	if (depth == 0) {
@@ -39,13 +39,13 @@ minimax(char board[8][8], char color, int depth, int flag, int *r, int *l)
 	}
 
 	// board 全体を調べる
-	for (i = 0; i < 8; i++) {
-		for (j = 0; j < 8; j++) {
+	for (i = 1; i <= 8; i++) {
+		for (j = 1; j <= 8; j++) {
 			// 現在位置に駒が置ける場合
 			if (can_put_(color, i, j, board)) {
 
 				// for debug
-				/* printf("can_put at (%d, %d)\n", i, j); */
+				printf("can_put at (%d, %d)\n", i, j);
 				
 				// 駒を置いた状態を作る
 				put_(color, i, j, board, pos);
@@ -58,8 +58,8 @@ minimax(char board[8][8], char color, int depth, int flag, int *r, int *l)
 				if (flag == 0 && tmp > point) {
 
 					// for debug
-					/* printf("flag: %d, tmp: %d, point: %d\n", */
-					/*        flag, tmp, point); */
+					printf("flag: %d, tmp: %d, point: %d\n",
+					       flag, tmp, point);
 					
 					// point, row, line を更新
 					point = tmp;
@@ -71,8 +71,8 @@ minimax(char board[8][8], char color, int depth, int flag, int *r, int *l)
 				if (flag == 1 && tmp < point) {
 
 					// for debug
-					/* printf("flag: %d, tmp: %d, point: %d\n", */
-					/*        flag, tmp, point); */
+					printf("flag: %d, tmp: %d, point: %d\n",
+					       flag, tmp, point);
 
 					// point, row, line を更新
 					point = tmp;

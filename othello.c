@@ -145,7 +145,7 @@ com_put(char color)
 	tmp = minimax(board, color, 3, 0, &row, &line);
 
 	// for debug
-	/* printf("tmp: %d, row: %d, line: %d\n", tmp, row, line); */
+	printf("tmp: %d, row: %d, line: %d\n", tmp, row, line);
 
 	if (tmp == -65 &&
 	    row == -1 &&
